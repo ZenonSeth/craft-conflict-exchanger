@@ -356,10 +356,11 @@ local function get_conflicts_page(state)
   if tabIndex == 3 then typetxt = "Shapeless Crafting" elseif tabIndex == 4 then typetxt = "Cooking" end
   local ret = {
     elem.Label {
-      marginStart = 0.5, text = "Groups of "..typetxt.." items that have the same crafting recipe"
+      marginStart = 0.5, marginTop = 0.2,
+      text = "Groups of "..typetxt.." items that have the same crafting recipe"
     },
     elem.ScrollContainer { id = "conflcont",
-      w = CONFLICT_CONTAINER_W, h = 11, toTop = true, toStart = true, marginTop = 0.5,
+      w = CONFLICT_CONTAINER_W, h = 11, toTop = true, toStart = true, marginTop = 1,
       elements = entires,
       pixelBorder = "#222222",
     },
