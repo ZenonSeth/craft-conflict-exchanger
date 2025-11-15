@@ -1,6 +1,6 @@
 # Craft Conflict Exchanger
 
-A mod for [Luanti](www.luanti.org). ContentDB Link (TBD)
+A mod for [Luanti](www.luanti.org). Download this mod at [ContentDB](https://content.luanti.org/packages/ZenonSeth/craft_conflict_exchanger/)
 
 Adds a machine that displays crafting and cooking recipe conflicts.
 
