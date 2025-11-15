@@ -25,6 +25,9 @@ W = group:wood, S = group:stone
 2. Chat command
 Simply enter the command: `/item-exchanger` in chat, and if server has not disabled it, you will be given an Exchanger
 
+## Dependencies
+- [Respec](https://content.luanti.org/packages/ZenonSeth/respec/): formspec creation library, which itself has no dependencies.
+
 ## Compatibility
 
 Exchanger functionality (listing conflicts and allowing exchanges) is compatible with any game.
