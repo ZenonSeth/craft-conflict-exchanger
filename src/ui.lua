@@ -4,12 +4,11 @@ local resinv = respec.inv
 
 local INPUT_LIST_NAME = "main"
 
-local META_LAST_INPUT = "lastinp"
-local META_SEL_IDX = "selidx"
-
 --------------------------------
 -- Common
 --------------------------------
+
+local det_inv_name = craft_conflict_exchanger.get_detached_inventory_name_for
 
 local function get_craft_grid_elements(recipe, w, h)
   local spacing = 0.05
@@ -67,30 +66,25 @@ local cannotExchangeDamagedTools = elem.Label {
   text = "Cannot exchange damaged tools.\nRepair tool first."
 }
 
-local function on_exchange_item_selected(info, index)
-  local meta = info.nodeMeta
-  meta:set_int(META_SEL_IDX, index)
-end
-
 local function get_exchange_info(state)
   local info = state.info
-  local meta = info.nodeMeta
-  local inv = meta:get_inventory()
-  local lastInputName = meta:get_string(META_LAST_INPUT)
+  local inv = craft_conflict_exchanger.get_detached_inv_for(info.playerName)
+  if not inv then return { output = "", input = "" } end
+  local lastInputName = state.lastInputName or ""
   local currItemStack = inv:get_stack(INPUT_LIST_NAME, 1)
-  local currIdx = meta:get_int(META_SEL_IDX)
+  local currIdx = state.currentIndex or 0
   if currItemStack:is_empty() then
-    meta:set_string(META_LAST_INPUT, "")
+    state.lastInputName = ""
     return { output = "", input = "" }
   end
 
   local swapInfo
   if currItemStack:get_name() ~= lastInputName then
     currIdx = 0
-    meta:set_int(META_SEL_IDX, 0)
+    state.currentIndex = 0
     swapInfo = craft_conflict_exchanger.get_swappable_items_for(currItemStack)
     state.swapInfo = swapInfo
-    meta:set_string(META_LAST_INPUT, currItemStack:get_name())
+    state.lastInputName = currItemStack:get_name()
   else
     swapInfo = state.swapInfo
   end
@@ -127,7 +121,7 @@ local function get_exchange_info(state)
         centerHor = true, w = 0, h = 0.7, marginStart = 0.9,
         text = singleItemInfo.item:get_description(),
         onClick = function(ss, _)
-          on_exchange_item_selected(ss.info, i)
+            ss.currentIndex = i
         end
       }
       local imgDef = {
@@ -192,7 +186,7 @@ local function get_exchanger_page(state)
       },
       elem.List { id = "input",
         w = 1, h = 1, below = "inputLbl", marginStart = 0.5,
-        inv = resinv.node(INPUT_LIST_NAME),
+        inv = resinv.detached(det_inv_name(state.info.playerName), INPUT_LIST_NAME),
       },
 
       elem.Label { id = "selectLbl",
@@ -225,7 +219,8 @@ local function get_exchanger_page(state)
         h = 0.8, w = 2.5, marginEnd = 0.4, marginBottom = 0.1, text = "Exchange\nOne",
         alignStart = "inputExact", alignEnd = "output", below = "output",
         onClick = function(ss, _)
-          local inf = ss.info ; local inv = inf.nodeMeta:get_inventory()
+          local inf = ss.info
+          local inv = craft_conflict_exchanger.get_detached_inv_for(inf.playerName)
           local leftover = craft_conflict_exchanger.perform_exchange_for(
             inf.player, inv:get_stack(INPUT_LIST_NAME, 1), exInputStack, outputStack, 1
           )
@@ -236,7 +231,8 @@ local function get_exchanger_page(state)
         h = 0.8, w = 2.5, marginEnd = 0.4, marginBottom = 0.1, text = "Exchange\nStack",
         alignStart = "inputExact", alignEnd = "output", below = "exone",
         onClick = function(ss, _)
-          local inf = ss.info ; local inv = inf.nodeMeta:get_inventory()
+          local inf = ss.info
+          local inv = craft_conflict_exchanger.get_detached_inv_for(inf.playerName)
           local leftover = craft_conflict_exchanger.perform_exchange_for(
             inf.player, inv:get_stack(INPUT_LIST_NAME, 1), exInputStack, outputStack, 2
           )
@@ -247,7 +243,8 @@ local function get_exchanger_page(state)
         h = 0.8, w = 2.5, marginEnd = 0.4, marginBottom = 0.1, text = "Exchange\nAll in Inv.",
         alignStart = "inputExact", alignEnd = "output", below = "exst",
         onClick = function(ss, _)
-          local inf = ss.info ; local inv = inf.nodeMeta:get_inventory()
+          local inf = ss.info
+          local inv = craft_conflict_exchanger.get_detached_inv_for(inf.playerName)
           local leftover = craft_conflict_exchanger.perform_exchange_for(
             inf.player, inv:get_stack(INPUT_LIST_NAME, 1), exInputStack, outputStack, 3
           )
@@ -261,7 +258,8 @@ local function get_exchanger_page(state)
         inv = resinv.player("main"),
       },
       elem.ListRing {
-        resinv.player("main"), resinv.node("main")
+        resinv.player("main"),
+        resinv.detached(det_inv_name(state.info.playerName), INPUT_LIST_NAME)
       },
   }
 
@@ -278,8 +276,9 @@ local CONFLICT_ICON_SIZE = 1
 local CONFLCIT_ICON_SPACING = 0.2
 local CONFLICT_CONTAINER_W =
   NUM_CONFLICT_ICONS_PER_ROW * CONFLICT_ICON_SIZE + (NUM_CONFLICT_ICONS_PER_ROW - 1) * CONFLCIT_ICON_SPACING
-local META_CONFLICT_FILTER_TXT = "confiltxt"
-local META_CONFLICT_RECIPE_INDEX = "conrecidx"
+
+local STATE_FILTER_TEXT = "filtxt"
+local STATE_RECIPE_IDX = "recidx"
 
 local function get_conflicts_page(state)
   local tabIndex = state.tabIndex
@@ -294,19 +293,18 @@ local function get_conflicts_page(state)
     return {}
   end
 
-  local meta = state.info.nodeMeta
-  local filterText = meta:get_string(META_CONFLICT_FILTER_TXT..tabIndex)
+  local filterText = state[STATE_FILTER_TEXT..tabIndex] or ""
 
   local entires = {}
   local lastId = ""
-  local recipeIndex = meta:get_int(META_CONFLICT_RECIPE_INDEX..tabIndex)
+  local recipeIndex = state[STATE_RECIPE_IDX..tabIndex] or 0
   local rowCounter = 1
   for i, oneConflictTable in ipairs(conflictsTable) do
     local oneConflictEntires = {}
     local recBtnDef = { id = "confrecbtn"..i, w = 6, h = 0.6,
-      text = "See Recipe for Conflict Group "..i, marginTop = 0.3, marginStart = 0.2, marginBottom = 0.1,
+      text = "See Recipe for Item Conflicts "..i, marginTop = 0.3, marginStart = 0.2, marginBottom = 0.1,
       onClick = function(ss, _)
-        ss.info.nodeMeta:set_int(META_CONFLICT_RECIPE_INDEX..tabIndex, i)
+        ss[STATE_RECIPE_IDX..tabIndex] = i
       end,
     }
     if lastId == "" then recBtnDef.toTop = true else recBtnDef.below = lastId end
@@ -370,7 +368,7 @@ local function get_conflicts_page(state)
       w = 4, h = 0.8,
       listener = function(ss, value, fields)
         if not fields["clearfilter"] then
-          ss.info.nodeMeta:set_string(META_CONFLICT_FILTER_TXT..ss.tabIndex, value)
+          ss[STATE_FILTER_TEXT..ss.tabIndex] = value
         end
       end
     },
@@ -378,7 +376,7 @@ local function get_conflicts_page(state)
       w = 0.8, h = 0.8, after = "fieldfilter", alignBottom = "fieldfilter",
       text = "X", tooltip = "Clear Search",
       onClick = function(ss, _)
-        ss.info.nodeMeta:set_string(META_CONFLICT_FILTER_TXT..ss.tabIndex, nil)
+        ss[STATE_FILTER_TEXT..ss.tabIndex] = nil
         return true
       end,
     },

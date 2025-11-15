@@ -267,7 +267,6 @@ local function give_to_player(playerObj, itemStack, amount)
   end
 end
 
-
 local function exchange_all_possible_in_player_inv(playerObj, takeStack, giveStack)
   local tginfo = find_smallest_take_amount(takeStack:get_count(), giveStack:get_count())
   local smallestTake, smallestGive = tginfo.smallestTake, tginfo.smallestGive
@@ -298,7 +297,6 @@ local function exchange_all_possible_in_player_inv(playerObj, takeStack, giveSta
     give_to_player(playerObj, giveStack, toGive)
   end
 end
-
 
 -- takes from the input stack and gives corresponding output stack to player
 -- takeAll : boolean, if true, takes max possible, otherwise triest to take at most for one giveStack's size

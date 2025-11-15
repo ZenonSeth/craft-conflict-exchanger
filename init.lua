@@ -6,6 +6,7 @@ craft_conflict_exchanger.MODPATH = core.get_modpath(craft_conflict_exchanger.MOD
 
 dofile(craft_conflict_exchanger.MODPATH.."/src/settings.lua")
 dofile(craft_conflict_exchanger.MODPATH.."/src/common.lua")
+dofile(craft_conflict_exchanger.MODPATH.."/src/detachedinv.lua")
 dofile(craft_conflict_exchanger.MODPATH.."/src/groupimg.lua")
 dofile(craft_conflict_exchanger.MODPATH.."/src/logic.lua")
 dofile(craft_conflict_exchanger.MODPATH.."/src/ui.lua")

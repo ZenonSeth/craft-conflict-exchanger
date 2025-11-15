@@ -5,8 +5,8 @@ local itemNameToItemCache = {}
 -- returns the first (as defined in registered_items) item name for the given group(s) as a string
 -- returns "air" as the item name if no items match the group
 local function get_group_item_name(groups)
-	local groupNames = groups:split(",")
-	for itemName, _ in pairs(minetest.registered_items) do
+  local groupNames = groups:split(",")
+  for itemName, _ in pairs(minetest.registered_items) do
     for _, groupName in ipairs(groupNames) do
       if core.get_item_group(itemName, groupName) ~= 0 then
         return itemName

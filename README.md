@@ -40,4 +40,3 @@ It's also possible to obtain the Exchanger via a console command, which does not
 
 - `craft_conflict_exchanger_allow_exchanger_crafting` : `boolean`, default `true` - Whether the Exchanger node is craftable via craft recipe
 - `craft_conflict_exchanger_allow_exchanger_command` : `boolean`, default `true` - Whether the Exchanger node can be obtained via console command
-
