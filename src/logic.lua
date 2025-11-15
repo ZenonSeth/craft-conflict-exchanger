@@ -124,9 +124,8 @@ local function process_shapeless_recipe(itemName, itemRecipe)
   shapelessCraftConflicts[newShapelessKey].recipe = itemRecipe
 end
 
-local function process_cook_recipe(itemName, itemRecipe, itemRecipeWidth)
-  itemRecipeWidth = itemRecipeWidth or 0
-  local newCookKey = make_width_recipe_key(itemRecipe, itemRecipeWidth)
+local function process_cook_recipe(itemName, itemRecipe)
+  local newCookKey = make_width_recipe_key(itemRecipe, 1)
   if cookConflicts[newCookKey] ~= nil then
     -- conflicted detected, just add it to that recipes list of outputs
     append_if_not_present(cookConflicts[newCookKey], itemName)
@@ -149,7 +148,7 @@ local function process_recipe_for(itemName, recipe)
       process_shapeless_recipe(get_actual_name(recipe.output), recipe.items)
     end
   elseif recipe.method == "cooking" then
-    process_cook_recipe(recipe.output, recipe.items, recipe.width)
+    process_cook_recipe(recipe.output, recipe.items)
   end
 end
 
