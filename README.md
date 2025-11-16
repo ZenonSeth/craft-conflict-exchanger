@@ -6,6 +6,9 @@ Adds a machine that displays crafting and cooking recipe conflicts.
 
 Also automatically allows exchange of items that share the same recipe, and thus for players to get items which cannot be crafted directly due to recipe conflicts.
 
+## How to use the Exchanger
+See [the wiki page for details](https://github.com/ZenonSeth/craft-conflict-exchanger/wiki)
+
 ## How to get the Exchanger
 
 There's 2 ways, both enabled by default, but both may be disabled by server-wide setting (See settingtypes below)
