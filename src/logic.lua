@@ -267,13 +267,20 @@ local function give_to_player(playerObj, itemStack, amount)
   end
 end
 
-local function exchange_all_possible_in_player_inv(playerObj, takeStack, giveStack)
+local function exchange_all_possible_in_player_inv(playerObj, inputStack, takeStack, giveStack)
   local tginfo = find_smallest_take_amount(takeStack:get_count(), giveStack:get_count())
   local smallestTake, smallestGive = tginfo.smallestTake, tginfo.smallestGive
   local takeName = takeStack:get_name()
   local inv = playerObj:get_inventory()
   local emptyStack = ItemStack()
   local takenFromInv = 0
+
+  if giveStack:is_empty() then return inputStack end
+
+  if inputStack:get_wear() == 0 and inputStack:get_name() == takeName then
+    takenFromInv = takenFromInv + inputStack:get_count()
+    inputStack:set_count(0)
+  end
 
   for i = 1, inv:get_size(LIST_MAIN) do
     local stack = inv:get_stack(LIST_MAIN, i)
@@ -296,6 +303,7 @@ local function exchange_all_possible_in_player_inv(playerObj, takeStack, giveSta
   if toGive > 0 then
     give_to_player(playerObj, giveStack, toGive)
   end
+  return inputStack
 end
 
 -- takes from the input stack and gives corresponding output stack to player
@@ -376,9 +384,7 @@ function craft_conflict_exchanger.perform_exchange_for(player, inputStack, takeS
   if mode == 1 or mode == 2 then
     return take_from_input_stack_and_give_to_player(player, inputStack, takeStack, giveStack, mode == 2)
   elseif mode == 3 then
-    exchange_all_possible_in_player_inv(player, takeStack, giveStack)
-    -- still exchange all, including the input stack
-    return take_from_input_stack_and_give_to_player(player, inputStack, takeStack, giveStack, true)
+    return exchange_all_possible_in_player_inv(player, inputStack, takeStack, giveStack)
   end
   return inputStack
 end
